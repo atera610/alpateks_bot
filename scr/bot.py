@@ -1,5 +1,5 @@
 from dotenv import dotenv_values
-from telegram.ext import Updater, MessageHandler, Filters, CommandHandler
+from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler
 import logging
 from dialogprocessor import DialogProcessor
 
@@ -18,6 +18,7 @@ if __name__ == '__main__':
     dialog_processor = DialogProcessor(chat_id=tg_chat_id)
     dispatcher.add_handler(CommandHandler("start", dialog_processor.start))
     dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, dialog_processor.process_message))
+    updater.dispatcher.add_handler(CallbackQueryHandler(dialog_processor.process_inline_buttons))
 
     updater.start_polling()
     updater.idle()

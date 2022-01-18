@@ -1,48 +1,112 @@
-from telegram import Update
-from telegram.ext import CallbackQueryHandler, CallbackContext
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram.ext import CallbackContext
+
+
+class Closure:
+    def __init__(self):
+        self.address = ""
+        self.partner_name = ""
+        self.money = ""
+        self.date = ""
+        self.company_name = ""
+        self.people_to_pay = []
+
+    def __str__(self):
+        return f'<b>Завершили работы</b> по адресу: {self.address}\n' \
+               f'Ожидаем поступления на счёт {self.company_name} от {self.partner_name} ' \
+               f'в размере {self.money} примерно {self.date}.\n' \
+               f'Мы должны: ' + ', '.join(self.people_to_pay)
 
 
 class ClosureProcessor:
-    ADDRESS, PARTNER_NAME, MONEY, DATE, COMPANY_NAME, DEBT, COLLECT_FORWARD, END = map(chr, range(8))
 
-    def __init__(self):
-        self.current_state = self.ADDRESS
+    def __init__(self, chat_id):
+        self.chat_id = chat_id
+        self.states = ["INIT", "ADDRESS", "PARTNER_NAME", "MONEY", "DATE", "COMPANY_NAME",
+                       "DEBT", "COLLECT_FORWARD", "END"]
+        self.state_index = 0
+        self.method_by_stage = {
+            "INIT": self.init_dialog,
+            "ADDRESS": self.process_address,
+            "PARTNER_NAME": self.process_partner_name,
+            "MONEY": self.process_money,
+            "DATE": self.process_date,
+            "COMPANY_NAME": self.process_company_name,
+            "DEBT": self.process_debt,
+            "COLLECT_FORWARD": self.collect_forward_data,
+            "END": self.end
+        }
+        comp_choose_keyboard = InlineKeyboardMarkup([
+        [
+            InlineKeyboardButton("ИП", callback_data='ИП'),
+            InlineKeyboardButton("ООО", callback_data='ООО'),
+        ]])
+        debt_keyboard = InlineKeyboardMarkup([
+            [
+                InlineKeyboardButton("Должны ещё кому-то", callback_data=0),
+                InlineKeyboardButton("Закрыть объект", callback_data=1),
+            ]])
+
+        self.question_by_stage = {
+            "ADDRESS":  "На каком адресе закончена работа?",
+            "PARTNER_NAME": "Название юрлица заказчика",
+            "MONEY":   "Сколько нам должен?",
+            "DATE":   "Когда примерно должно прийти?",
+            "COMPANY_NAME": "Наше юрлицо",
+            "DEBT":  "Кому и сколько должны за работу? (Фамилия, Имя работника, сумма. Если платить с"
+                    " налогами, укажите на сколько делить)"
+        }
+        self.keyboard_by_stage = {
+            "COMPANY_NAME": comp_choose_keyboard,
+            "DEBT":  debt_keyboard
+        }
+        self.closure = Closure()
+        self.closure_finished = False
 
     def process_message(self, update: Update, context: CallbackContext):
-        return self.current_state
+        self.method_by_stage[self.states[self.state_index]](update, context)
+        state = self.states[self.state_index]
+        if state in self.keyboard_by_stage:
+            context.bot.send_message(chat_id=update.effective_chat.id, text=self.question_by_stage[state], reply_markup=self.keyboard_by_stage[state])
+        elif state in self.question_by_stage:
+            context.bot.send_message(chat_id=update.effective_chat.id, text=self.question_by_stage[state])
+        elif state == 'COLLECT_FORWARD':
+            self.method_by_stage['COLLECT_FORWARD'](update, context)
 
-    def __ask_address(self):
-        pass
+    def init_dialog(self, update: Update, context: CallbackContext):
+        self.state_index += 1
 
-    def __ask_partner_name(self):
-        pass
+    def process_address(self, update: Update, context: CallbackContext):
+        self.closure.address = update.message.text
+        self.state_index += 1
 
-    def __ask_money(self):
-        pass
+    def process_partner_name(self, update: Update, context: CallbackContext):
+        self.closure.partner_name = update.message.text
+        self.state_index += 1
 
-    def __ask_date(self):
-        pass
+    def process_money(self, update: Update, context: CallbackContext):
+        self.closure.money = update.message.text
+        self.state_index += 1
 
-    def __ask_company_name(self):
-        pass
+    def process_date(self, update: Update, context: CallbackContext):
+        self.closure.date = update.message.text
+        self.state_index += 1
 
-    def __ask_debt(self):
-        pass
+    def process_company_name(self, update: Update, context: CallbackContext):
+        self.closure.company_name = update.callback_query.data
+        self.state_index += 1
 
-    def __collect_forward_data(self):
-        pass
+    def process_debt(self, update: Update, context: CallbackContext):
+        if update.message is not None:
+            self.closure.people_to_pay.append(update.message.text)
+        if update.callback_query is not None and update.callback_query.data == '1':
+            self.state_index += 1
 
-    def end(self):
-        pass
+    def collect_forward_data(self, update: Update, context: CallbackContext):
+        message = f'{self.closure}\n{update.callback_query.from_user.first_name}(@{update.callback_query.from_user.username})'
+        context.bot.send_message(chat_id=self.chat_id, text=message, parse_mode=ParseMode.HTML)
+        self.state_index += 1
 
-    def get_states(self):
-        return {
-                self.ADDRESS: [CallbackQueryHandler(self.__ask_address)],
-                self.PARTNER_NAME: [CallbackQueryHandler(self.__ask_partner_name)],
-                self.MONEY: [CallbackQueryHandler(self.__ask_money)],
-                self.DATE: [CallbackQueryHandler(self.__ask_date)],
-                self.COMPANY_NAME: [CallbackQueryHandler(self.__ask_company_name)],
-                self.DEBT: [CallbackQueryHandler(self.__ask_debt)],
-                self.COLLECT_FORWARD: [CallbackQueryHandler(self.__collect_forward_data)],
-            }
+    def end(self, update: Update, context: CallbackContext):
+        self.state_index = 0
 

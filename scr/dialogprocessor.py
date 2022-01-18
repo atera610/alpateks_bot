@@ -5,7 +5,7 @@ from scr.ClosureProcessor import ClosureProcessor
 
 
 class DialogProcessor:
-    INIT, FORWARD, CLOSURE = map(chr, range(3))
+    INIT, FORWARD, CLOSURE = range(3)
 
     def __init__(self, chat_id):
         self.chat_id = chat_id
@@ -15,13 +15,13 @@ class DialogProcessor:
         self.funny_story = ["Анекдот дня"]
         self.current_task = ''
         self.current_state = self.INIT
-        self.closure_processor = ClosureProcessor()
+        self.closure_processor = ClosureProcessor(chat_id)
 
     def __forward(self, update: Update, context: CallbackContext):
         update.message.reply_text("Принято, спасибо!")
         message = f'<b>{self.current_task}</b>\n' \
-                  f'Автор: {update.message.from_user.first_name}(@{update.message.from_user.username})\n' \
-                  f'Сообщение:\n{update.message.text}'
+                  f'{update.message.text}\n' \
+                  f'{update.message.from_user.first_name}(@{update.message.from_user.username})\n'
         context.bot.send_message(chat_id=self.chat_id, text=message, parse_mode=ParseMode.HTML)
         self.current_state = self.INIT
 
@@ -34,27 +34,33 @@ class DialogProcessor:
         self.current_state = self.FORWARD
 
     def process_message(self, update: Update, context: CallbackContext):
-        if self.process_buttons(update) or self.current_state == self.INIT:
+        if self.process_buttons(update, context) or self.current_state == self.INIT:
             return
         if self.current_state == self.FORWARD:
             self.__forward(update, context)
         elif self.current_state == self.CLOSURE:
-            inner_state = self.closure_processor.process_message(update, context)
-            self.current_state = self.INIT if inner_state == ClosureProcessor.END else self.CLOSURE;
+            self.closure_processor.process_message(update, context)
+            self.current_state = self.INIT if self.closure_processor.closure_finished else self.CLOSURE;
 
-    def process_buttons(self, update: Update):
+    def process_buttons(self, update: Update, context: CallbackContext):
         if update.message.text in self.costs_names:
             self.__process_costs(update)
         elif update.message.text in self.cash_income:
             self.__process_cash_income(update)
         elif update.message.text in self.closure:
-            self.current_state = 'closure'
+            self.current_state = self.CLOSURE
+            self.closure_processor.process_message(update, context)
         elif update.message.text in self.funny_story:
             pass
         else:
             return False
         self.current_task = update.message.text
         return True
+
+    def process_inline_buttons(self, update: Update, context: CallbackContext):
+        if self.current_state == self.CLOSURE:
+            self.closure_processor.process_message(update, context)
+            self.current_state = self.INIT if self.closure_processor.closure_finished else self.CLOSURE;
 
     def start(self, update: Update, context: CallbackContext):
         reply_markup = ReplyKeyboardMarkup(self.get_keyboard())
