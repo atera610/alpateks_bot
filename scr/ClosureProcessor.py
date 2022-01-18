@@ -1,4 +1,4 @@
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ParseMode, ReplyKeyboardMarkup
 from telegram.ext import CallbackContext
 
 
@@ -41,11 +41,7 @@ class ClosureProcessor:
             InlineKeyboardButton("ИП", callback_data='ИП'),
             InlineKeyboardButton("ООО", callback_data='ООО'),
         ]])
-        debt_keyboard = InlineKeyboardMarkup([
-            [
-                InlineKeyboardButton("Должны ещё кому-то", callback_data=0),
-                InlineKeyboardButton("Закрыть объект", callback_data=1),
-            ]])
+        debt_keyboard = ReplyKeyboardMarkup([["Должны ещё кому-то", "Закрыть объект"]])
 
         self.question_by_stage = {
             "ADDRESS":  "На каком адресе закончена работа?",
@@ -66,6 +62,7 @@ class ClosureProcessor:
     def process_message(self, update: Update, context: CallbackContext):
         self.method_by_stage[self.states[self.state_index]](update, context)
         state = self.states[self.state_index]
+
         if state in self.keyboard_by_stage:
             context.bot.send_message(chat_id=update.effective_chat.id, text=self.question_by_stage[state], reply_markup=self.keyboard_by_stage[state])
         elif state in self.question_by_stage:
@@ -97,13 +94,15 @@ class ClosureProcessor:
         self.state_index += 1
 
     def process_debt(self, update: Update, context: CallbackContext):
-        if update.message is not None:
-            self.closure.people_to_pay.append(update.message.text)
-        if update.callback_query is not None and update.callback_query.data == '1':
+        if update.message.text == "Должны ещё кому-то":
+            return
+        elif update.message.text == "Закрыть объект":
             self.state_index += 1
+            return
+        self.closure.people_to_pay.append(update.message.text)
 
     def collect_forward_data(self, update: Update, context: CallbackContext):
-        message = f'{self.closure}\n{update.callback_query.from_user.first_name}(@{update.callback_query.from_user.username})'
+        message = f'{self.closure}\n{update.message.from_user.first_name}(@{update.message.from_user.username})'
         context.bot.send_message(chat_id=self.chat_id, text=message, parse_mode=ParseMode.HTML)
         self.state_index += 1
 

@@ -40,7 +40,10 @@ class DialogProcessor:
             self.__forward(update, context)
         elif self.current_state == self.CLOSURE:
             self.closure_processor.process_message(update, context)
-            self.current_state = self.INIT if self.closure_processor.closure_finished else self.CLOSURE;
+            self.current_state = self.INIT if self.closure_processor.closure_finished else self.CLOSURE
+            if self.current_state == self.INIT:
+                reply_markup = ReplyKeyboardMarkup(self.get_keyboard())
+                update.message.reply_text("", reply_markup=reply_markup)
 
     def process_buttons(self, update: Update, context: CallbackContext):
         if update.message.text in self.costs_names:
