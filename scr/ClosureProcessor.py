@@ -36,12 +36,8 @@ class ClosureProcessor:
             "COLLECT_FORWARD": self.collect_forward_data,
             "END": self.end
         }
-        comp_choose_keyboard = InlineKeyboardMarkup([
-        [
-            InlineKeyboardButton("ИП", callback_data='ИП'),
-            InlineKeyboardButton("ООО", callback_data='ООО'),
-        ]])
-        debt_keyboard = ReplyKeyboardMarkup([["Должны ещё кому-то", "Закрыть объект"]])
+        comp_choose_keyboard = ReplyKeyboardMarkup([["ИП", "ООО"]])
+        debt_keyboard = ReplyKeyboardMarkup([["Должны ещё кому-то", "Закрыть объект "]])
 
         self.question_by_stage = {
             "ADDRESS":  "На каком адресе закончена работа?",
@@ -108,4 +104,5 @@ class ClosureProcessor:
 
     def end(self, update: Update, context: CallbackContext):
         self.state_index = 0
+
 

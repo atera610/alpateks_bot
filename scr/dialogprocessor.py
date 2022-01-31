@@ -1,11 +1,11 @@
-from telegram import Update, ParseMode, ReplyKeyboardMarkup
+from telegram import Update, ParseMode, ReplyKeyboardMarkup, KeyboardButton
 from telegram.ext import CallbackContext
 
 from scr.ClosureProcessor import ClosureProcessor
 
 
 class DialogProcessor:
-    INIT, FORWARD, CLOSURE = range(3)
+    INIT, FORWARD, CLOSURE = map(chr, range(3))
 
     def __init__(self, chat_id):
         self.chat_id = chat_id
@@ -35,6 +35,9 @@ class DialogProcessor:
 
     def process_message(self, update: Update, context: CallbackContext):
         if self.process_buttons(update, context) or self.current_state == self.INIT:
+            if self.current_state == self.INIT:
+                reply_markup = ReplyKeyboardMarkup(self.get_keyboard())
+                update.message.reply_text("", reply_markup=reply_markup)
             return
         if self.current_state == self.FORWARD:
             self.__forward(update, context)
@@ -71,7 +74,7 @@ class DialogProcessor:
         self.current_state = self.INIT
 
     def get_keyboard(self):
-        return [self.costs_names, self.cash_income, self.closure, self.funny_story]
+        return [KeyboardButton(self.costs_names), KeyboardButton(self.cash_income), KeyboardButton(self.closure), KeyboardButton(self.funny_story)]
 
 
 
