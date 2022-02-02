@@ -217,7 +217,7 @@ if __name__ == '__main__':
     dispatcher.add_handler(main_conv)
 
     updater.start_webhook(listen="0.0.0.0",
-                          port=8443,
+                          port=os.environ.get('PORT', '8443'),
                           url_path=tg_token,
                           webhook_url='https://financial-accounting-bot.herokuapp.com/' + tg_token)
     updater.idle()
