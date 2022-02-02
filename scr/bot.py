@@ -8,7 +8,7 @@ import logging
 import urllib3
 import json
 
-config = dotenv_values('.env')
+config = dotenv_values('../.env')
 tg_token = config['TELEGRAM_BOT_TOKEN']
 tg_chat_id = config['TELEGRAM_CHAT_ID']
 
@@ -218,6 +218,6 @@ if __name__ == '__main__':
 
     updater.start_webhook(listen="0.0.0.0",
                           port=8443,
-                          url_path=tg_token)
-    updater.bot.setWebhook('https://financial-accounting-bot.herokuapp.com/' + tg_token)
+                          url_path=tg_token,
+                          webhook_url='https://financial-accounting-bot.herokuapp.com/' + tg_token)
     updater.idle()
