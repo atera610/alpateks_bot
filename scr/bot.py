@@ -1,3 +1,5 @@
+import os
+
 from dotenv import dotenv_values
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ParseMode
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler, ConversationHandler, \
@@ -215,7 +217,7 @@ if __name__ == '__main__':
     dispatcher.add_handler(main_conv)
 
     updater.start_webhook(listen="0.0.0.0",
-                          port=int(8080),
+                          port=int(os.environ.get('PORT', 5000)),
                           url_path=tg_token)
     updater.bot.setWebhook('https://financial-accounting-bot.herokuapp.com/' + tg_token)
     updater.idle()
