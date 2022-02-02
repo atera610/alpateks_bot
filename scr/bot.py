@@ -213,5 +213,9 @@ if __name__ == '__main__':
         fallbacks=[CommandHandler('stop', stop)],
     )
     dispatcher.add_handler(main_conv)
-    updater.start_polling()
+
+    updater.start_webhook(listen="0.0.0.0",
+                          port=int(8080),
+                          url_path=tg_token)
+    updater.bot.setWebhook('https://financial-accounting-bot.herokuapp.com/' + tg_token)
     updater.idle()
