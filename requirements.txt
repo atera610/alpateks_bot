@@ -1,3 +1,0 @@
-python-dotenv>=0.19.2
-python-telegram-bot==13.10
-urllib3==1.26.8

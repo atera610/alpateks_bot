@@ -6,15 +6,6 @@ import logging
 import urllib3
 import json
 
-main_menu_text = "Вернуться в основное меню"
-
-expenses_one_text = "Расход р/c"
-expenses_two_text = "Расход с корп. карты"
-expenses_three_text = "Расход налички"
-income_text = "Поступление налички"
-closure_text = "Закрыть объект"
-funny_story_text = "Внимание, анекдот!"
-
 config = dotenv_values('../.env')
 tg_token = config['TELEGRAM_BOT_TOKEN']
 tg_chat_id = config['TELEGRAM_CHAT_ID']
@@ -23,12 +14,21 @@ funny_story_url = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
+main_menu_text = "Вернуться в основное меню"
+expenses_one_text = "Расход р/c"
+expenses_two_text = "Расход с корп. карты"
+expenses_three_text = "Расход налички"
+income_text = "Поступление налички"
+closure_text = "Закрыть объект"
+funny_story_text = "Внимание, анекдот!"
+
 cost_one_button = KeyboardButton(expenses_one_text)
 cost_two_button = KeyboardButton(expenses_two_text)
 cost_three_button = KeyboardButton(expenses_three_text)
 cash_button = KeyboardButton(income_text)
 closure_button = KeyboardButton(closure_text)
 story_button = KeyboardButton(funny_story_text)
+
 button_names = [expenses_one_text, expenses_two_text, expenses_three_text, income_text, closure_text, funny_story_text]
 keyboard = [[cost_one_button, cost_two_button, cost_three_button], [cash_button], [closure_button], [story_button]]
 
@@ -44,14 +44,21 @@ def start(update: Update, context: CallbackContext) -> str:
     return INIT
 
 
-def closure_handler(update: Update, context: CallbackContext) -> str:
-    update.message.reply_text("На каком адресе закончена работа?", reply_markup=ReplyKeyboardMarkup([[main_menu_text]]))
-    return ADDRESS
+def stop(update: Update, context: CallbackContext) -> int:
+    update.message.reply_text('Спасибо за работу, пока!')
+    return ConversationHandler.END
 
 
-def closure_selected(update: Update, context: CallbackContext) -> str:
-    closure_handler(update, context)
-    return CLOSURE_DIALOG
+def process_expenses(update: Update, context: CallbackContext) -> str:
+    context.user_data[CURRENT_TASK] = update.message.text
+    update.message.reply_text("Укажите сумму, на что потрачено и адрес объекта, к которому относится расход")
+    return FORWARD
+
+
+def process_cash_income(update: Update, context: CallbackContext) -> str:
+    context.user_data[CURRENT_TASK] = update.message.text
+    update.message.reply_text("Укажите сумму и адрес объекта, к которому относится поступление")
+    return FORWARD
 
 
 def process_story(update: Update, context: CallbackContext) -> str:
@@ -91,16 +98,14 @@ def forward(update: Update, context: CallbackContext) -> str:
     return INIT
 
 
-def process_expenses(update: Update, context: CallbackContext) -> str:
-    context.user_data[CURRENT_TASK] = update.message.text
-    update.message.reply_text("Укажите сумму, на что потрачено и адрес объекта, к которому относится расход")
-    return FORWARD
+def closure_handler(update: Update, context: CallbackContext) -> str:
+    update.message.reply_text("На каком адресе закончена работа?", reply_markup=ReplyKeyboardMarkup([[main_menu_text]]))
+    return ADDRESS
 
 
-def process_cash_income(update: Update, context: CallbackContext) -> str:
-    context.user_data[CURRENT_TASK] = update.message.text
-    update.message.reply_text("Укажите сумму и адрес объекта, к которому относится поступление")
-    return FORWARD
+def closure_selected(update: Update, context: CallbackContext) -> str:
+    closure_handler(update, context)
+    return CLOSURE_DIALOG
 
 
 def process_address(update: Update, context: CallbackContext) -> str:
@@ -165,11 +170,6 @@ def collect_forward_data(update: Update, context: CallbackContext) -> str:
         context.bot.send_message(chat_id=tg_chat_id, text=message, parse_mode=ParseMode.HTML)
     user_data.clear()
     return END
-
-
-def stop(update: Update, context: CallbackContext) -> int:
-    update.message.reply_text('Спасибо за работу, пока!')
-    return ConversationHandler.END
 
 
 def stop_inner(update: Update, context: CallbackContext) -> str:
