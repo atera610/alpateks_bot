@@ -8,7 +8,7 @@ import logging
 import urllib3
 import json
 
-config = dotenv_values('../.env')
+config = dotenv_values('.env')
 tg_token = config['TELEGRAM_BOT_TOKEN']
 tg_chat_id = config['TELEGRAM_CHAT_ID']
 
