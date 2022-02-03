@@ -1,4 +1,6 @@
-# alpateks_bot
+
+# financial_accounting_bot
+>>>>>>> 99d3b7363c55c6864b81cdb3461a3c323c17b8a8
 Для запуска
 <ul>
 <li>Установить зависимости: pip install -r requirements.txt</li>
