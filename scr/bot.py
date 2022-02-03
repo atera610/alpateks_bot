@@ -8,9 +8,10 @@ import logging
 import urllib3
 import json
 
-config = dotenv_values('.env')
+config = dotenv_values('../.env')
 tg_token = config['TELEGRAM_BOT_TOKEN']
 tg_chat_id = config['TELEGRAM_CHAT_ID']
+host_url = config['HOST_URL']
 
 funny_story_url = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
 
@@ -219,5 +220,5 @@ if __name__ == '__main__':
     updater.start_webhook(listen="0.0.0.0",
                           port=os.environ.get('PORT', '8443'),
                           url_path=tg_token,
-                          webhook_url='https://financial-accounting-bot.herokuapp.com/' + tg_token)
+                          webhook_url=host_url + tg_token)
     updater.idle()
