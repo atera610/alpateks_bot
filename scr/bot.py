@@ -1,5 +1,6 @@
 import os
 
+from dotenv import dotenv_values
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ParseMode
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler, ConversationHandler, \
     CallbackContext
@@ -7,9 +8,10 @@ import logging
 import urllib3
 import json
 
-tg_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-tg_chat_id = os.environ.get('TELEGRAM_CHAT_ID')
-host_url = os.environ.get('HOST_URL')
+config = dotenv_values('../.env')
+tg_token = config['TELEGRAM_BOT_TOKEN']
+tg_chat_id = config['TELEGRAM_CHAT_ID']
+host_url = config['HOST_URL']
 
 funny_story_url = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
 
@@ -220,6 +222,9 @@ if __name__ == '__main__':
         fallbacks=[CommandHandler('stop', stop)],
     )
     dispatcher.add_handler(main_conv)
+    print(host_url)
+    print(tg_token)
+    print(tg_chat_id)
 
     updater.start_webhook(listen="0.0.0.0",
                           port=os.environ.get('PORT', '8443'),
