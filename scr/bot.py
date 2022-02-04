@@ -8,10 +8,10 @@ import logging
 import urllib3
 import json
 
-# config = dotenv_values('../.env')
-tg_token = os.environ.get('TELEGRAM_BOT_TOKEN')
-tg_chat_id = os.environ.get('TELEGRAM_CHAT_ID')
-host_url = os.environ.get('HOST_URL')
+config = dotenv_values('../.env')
+tg_token = config['TELEGRAM_BOT_TOKEN']
+tg_chat_id = config['TELEGRAM_CHAT_ID']
+host_url = config['HOST_URL']
 
 funny_story_url = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
 
@@ -181,6 +181,9 @@ def stop_inner(update: Update, context: CallbackContext) -> str:
 
 
 if __name__ == '__main__':
+    logging.error(host_url)
+    logging.error(tg_token)
+    logging.error(tg_chat_id)
     updater = Updater(tg_token)
     dispatcher = updater.dispatcher
 
@@ -222,9 +225,6 @@ if __name__ == '__main__':
         fallbacks=[CommandHandler('stop', stop)],
     )
     dispatcher.add_handler(main_conv)
-    logging.error(host_url)
-    logging.error(tg_token)
-    logging.error(tg_chat_id)
 
     updater.start_webhook(listen="0.0.0.0",
                           port=os.environ.get('PORT', '8443'),
