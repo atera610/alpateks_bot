@@ -1,6 +1,5 @@
 import os
 
-from dotenv import dotenv_values
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ParseMode
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler, ConversationHandler, \
     CallbackContext
@@ -8,10 +7,10 @@ import logging
 import urllib3
 import json
 
-config = dotenv_values('../.env')
-tg_token = config['TELEGRAM_BOT_TOKEN']
-tg_chat_id = config['TELEGRAM_CHAT_ID']
-host_url = config['HOST_URL']
+
+tg_token = os.environ.get('TELEGRAM_BOT_TOKEN')
+tg_chat_id = os.environ.get('TELEGRAM_CHAT_ID')
+host_url = os.environ.get('HOST_URL')
 
 funny_story_url = "http://rzhunemogu.ru/RandJSON.aspx?CType=1"
 
@@ -181,9 +180,6 @@ def stop_inner(update: Update, context: CallbackContext) -> str:
 
 
 if __name__ == '__main__':
-    logging.error(host_url)
-    logging.error(tg_token)
-    logging.error(tg_chat_id)
     updater = Updater(tg_token)
     dispatcher = updater.dispatcher
 
