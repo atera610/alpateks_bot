@@ -222,9 +222,9 @@ if __name__ == '__main__':
         fallbacks=[CommandHandler('stop', stop)],
     )
     dispatcher.add_handler(main_conv)
-    print(host_url)
-    print(tg_token)
-    print(tg_chat_id)
+    logging.error(host_url)
+    logging.error(tg_token)
+    logging.error(tg_chat_id)
 
     updater.start_webhook(listen="0.0.0.0",
                           port=os.environ.get('PORT', '8443'),
