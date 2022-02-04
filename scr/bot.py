@@ -1,6 +1,5 @@
 import os
 
-# from dotenv import dotenv_values
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, ParseMode
 from telegram.ext import Updater, MessageHandler, Filters, CommandHandler, CallbackQueryHandler, ConversationHandler, \
     CallbackContext
@@ -8,7 +7,6 @@ import logging
 import urllib3
 import json
 
-# config = dotenv_values('.env')
 tg_token = os.environ.get('TELEGRAM_BOT_TOKEN')
 tg_chat_id = os.environ.get('TELEGRAM_CHAT_ID')
 host_url = os.environ.get('HOST_URL')
