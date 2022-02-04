@@ -201,7 +201,13 @@ if __name__ == '__main__':
         }
     )
     main_conv = ConversationHandler(
-        entry_points=[CommandHandler('start', start)],
+        entry_points=[CommandHandler('start', start), MessageHandler(Filters.regex(expenses_one_text)
+                                  | Filters.regex(expenses_two_text)
+                                  | Filters.regex(expenses_three_text),
+                                  process_expenses),
+                   MessageHandler(Filters.regex(income_text), process_cash_income),
+                   MessageHandler(Filters.regex(closure_text), closure_selected),
+                   MessageHandler(Filters.regex(funny_story_text), process_story)],
         states={
             INIT: [MessageHandler(Filters.regex(expenses_one_text)
                                   | Filters.regex(expenses_two_text)
