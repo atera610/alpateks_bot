@@ -164,8 +164,8 @@ def collect_forward_data(update: Update, context: CallbackContext) -> str:
         update.message.reply_text(message, parse_mode=ParseMode.HTML, reply_markup=ReplyKeyboardMarkup(keyboard))
     else:
         closure_info = f'<b>Завершили работы</b> по адресу: {user_data[ADDRESS]}\n' \
-                       f'Ожидаем поступления на счёт {user_data[COMPANY_NAME]} от {user_data[PARTNER_NAME]} ' \
-                       f'в размере {user_data[MONEY]} примерно {user_data[DATE]}.\n' \
+                       f'Ожидаем поступления на счёт <b>{user_data[COMPANY_NAME]}</b> от <b>{user_data[PARTNER_NAME]}</b> ' \
+                       f'в размере <b>{user_data[MONEY]}</b> {user_data[DATE]}.\n' \
                        f'Мы должны:\n{user_data[DEBT] if DEBT in user_data else ""} '
         message = f'{closure_info}\n<i>{update.message.from_user.first_name}(@{update.message.from_user.username})</i>'
         update.message.reply_text(message, parse_mode=ParseMode.HTML, reply_markup=ReplyKeyboardMarkup(keyboard))
